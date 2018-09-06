@@ -30,12 +30,16 @@ public abstract class AbstractSelectImportedObjectDialog extends AbstractDialog 
     protected Button useCommentAsLogicalNameButton;
 
     private Button mergeWordButton;
+    
+    private Button mergeTablesButton;
 
     protected DBObjectSet dbObjectSet;
 
     protected boolean resultUseCommentAsLogicalName;
 
     private boolean resultMergeWord;
+
+    private boolean resultMergeTables;
 
     private List<DBObject> resultSelectedDbObjects;
 
@@ -88,6 +92,8 @@ public abstract class AbstractSelectImportedObjectDialog extends AbstractDialog 
     protected void initializeOptionGroup(final Group group) {
         mergeWordButton = CompositeFactory.createCheckbox(this, group, "label.merge.word", false);
         mergeWordButton.setSelection(true);
+        mergeTablesButton = CompositeFactory.createCheckbox(this, group, "label.merge.tables", false);
+        mergeTablesButton.setSelection(true);
     }
 
     /**
@@ -118,6 +124,7 @@ public abstract class AbstractSelectImportedObjectDialog extends AbstractDialog 
         }
 
         resultMergeWord = mergeWordButton.getSelection();
+        resultMergeTables = mergeTablesButton.getSelection();
     }
 
     /**
@@ -218,6 +225,10 @@ public abstract class AbstractSelectImportedObjectDialog extends AbstractDialog 
 
     public boolean isMergeWord() {
         return resultMergeWord;
+    }
+    
+    public boolean isMergeTables() {
+        return resultMergeTables;
     }
 
     public boolean isMergeGroup() {

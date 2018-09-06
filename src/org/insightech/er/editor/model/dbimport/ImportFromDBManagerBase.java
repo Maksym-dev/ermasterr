@@ -99,6 +99,8 @@ public abstract class ImportFromDBManagerBase implements ImportFromDBManager {
 
     private boolean mergeWord;
 
+    private boolean mergeTables;
+
     private int taskCount;
 
     private int taskTotalCount;
@@ -172,13 +174,14 @@ public abstract class ImportFromDBManagerBase implements ImportFromDBManager {
     }
 
     @Override
-    public void init(final Connection con, final DBSetting dbSetting, final ERDiagram diagram, final List<DBObject> dbObjectList, final boolean useCommentAsLogicalName, final boolean mergeWord) throws SQLException {
+    public void init(final Connection con, final DBSetting dbSetting, final ERDiagram diagram, final List<DBObject> dbObjectList, final boolean useCommentAsLogicalName, final boolean mergeWord, final boolean mergeTables) throws SQLException {
         this.con = con;
         this.dbSetting = dbSetting;
         this.diagram = diagram;
         this.dbObjectList = dbObjectList;
         this.useCommentAsLogicalName = useCommentAsLogicalName;
         this.mergeWord = mergeWord;
+        this.mergeTables = mergeTables;
 
         metaData = con.getMetaData();
         translationResources = new TranslationResources(diagram.getDiagramContents().getSettings().getTranslationSetting());
@@ -1105,6 +1108,11 @@ public abstract class ImportFromDBManagerBase implements ImportFromDBManager {
     @Override
     public List<ERTable> getImportedTables() {
         return importedTables;
+    }
+    
+    @Override
+    public boolean isMergeTables() {
+        return mergeTables;
     }
 
     public List<Sequence> getImportedSequences() {

@@ -17,6 +17,7 @@ import org.insightech.er.editor.model.diagram_contents.element.connection.Connec
 import org.insightech.er.editor.model.diagram_contents.element.connection.Relation;
 import org.insightech.er.editor.model.diagram_contents.element.node.Location;
 import org.insightech.er.editor.model.diagram_contents.element.node.NodeElement;
+import org.insightech.er.editor.model.diagram_contents.element.node.table.ERTable;
 import org.insightech.er.editor.model.diagram_contents.element.node.table.TableView;
 import org.insightech.er.editor.model.diagram_contents.element.node.table.column.NormalColumn;
 import org.insightech.er.editor.model.diagram_contents.not_element.group.ColumnGroup;
@@ -89,8 +90,13 @@ public class ImportTableCommand extends AbstractCreateElementCommand {
 
             for (final NodeElement nodeElement : nodeElementList) {
                 final Node node = new Node();
-
-                node.setPadding(insets);
+                if (nodeElement instanceof ERTable) {
+                    ERTable table = (ERTable) nodeElement;
+                    node.setPadding(new Insets(table.getX() * table.getFontSize(), table.getY() * table.getFontSize(),
+                            table.getHeight() * table.getFontSize(), table.getWidth() * table.getFontSize()));
+                } else {
+                    node.setPadding(insets);
+                }
                 graph.nodes.add(node);
                 nodeElementNodeMap.put(nodeElement, node);
             }

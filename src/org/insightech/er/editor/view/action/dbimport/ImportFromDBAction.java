@@ -20,6 +20,9 @@ import org.insightech.er.editor.model.dbimport.DBObjectSet;
 import org.insightech.er.editor.model.dbimport.ImportFromDBManagerEclipseBase;
 import org.insightech.er.editor.model.dbimport.PreImportFromDBManager;
 import org.insightech.er.editor.model.diagram_contents.element.node.NodeElement;
+import org.insightech.er.editor.model.diagram_contents.element.node.category.Category;
+import org.insightech.er.editor.model.diagram_contents.element.node.table.ERTable;
+import org.insightech.er.editor.model.diagram_contents.element.node.table.TableView;
 import org.insightech.er.editor.model.settings.DBSetting;
 import org.insightech.er.editor.view.dialog.dbimport.AbstractSelectImportedObjectDialog;
 import org.insightech.er.editor.view.dialog.dbimport.ImportDBSettingDialog;
@@ -127,7 +130,7 @@ public class ImportFromDBAction extends AbstractImportAction {
                 } else if (step == 5) {
                     final ProgressMonitorDialog dialog = new ProgressMonitorDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
                     final ImportFromDBManagerEclipseBase tableImportManager = (ImportFromDBManagerEclipseBase) manager.getTableImportManager();
-                    tableImportManager.init(con, dbSetting, diagram, importDialog.getSelectedDbObjects(), importDialog.isUseCommentAsLogicalName(), importDialog.isMergeWord());
+                    tableImportManager.init(con, dbSetting, diagram, importDialog.getSelectedDbObjects(), importDialog.isUseCommentAsLogicalName(), importDialog.isMergeWord(), importDialog.isMergeTables());
 
                     try {
                         dialog.run(true, true, tableImportManager);
@@ -138,8 +141,36 @@ public class ImportFromDBAction extends AbstractImportAction {
 
                         } else {
                             importedNodeElements = new ArrayList<NodeElement>();
-
-                            importedNodeElements.addAll(tableImportManager.getImportedTables());
+                            
+                            // TODO Think about more efficient algorithm to compare tables
+                            if (tableImportManager.isMergeTables()) {
+                                List<ERTable> importedTables = tableImportManager.getImportedTables();
+                                
+                                List<ERTable> existTables = 
+                                        diagram.getDiagramContents().getContents().getTableSet().getList();
+                                List<ERTable> existTablesCopy = new ArrayList<>(existTables);
+                                for (ERTable table : importedTables) {
+                                    for (ERTable exists : existTablesCopy) {
+                                        if (table.getPhysicalName().equalsIgnoreCase(exists.getPhysicalName())) {
+                                            table.setFontName(exists.getFontName());
+                                            table.setFontSize(exists.getFontSize());
+                                            table.setLocation(exists.getLocation());
+                                            table.setActualLocation(exists.getActualLocation());
+                                            diagram.removeContent(exists);
+                                            for (final Category category : diagram.getDiagramContents().getSettings().getCategorySetting().getAllCategories()) {
+                                                if (category.contains(exists)) {
+                                                    category.remove(exists);
+                                                }
+                                            }
+                                            diagram.refreshChildren();
+                                            importedNodeElements.add(table);
+                                            break;
+                                        }
+                                    }
+                                }
+                            } else {
+                                importedNodeElements.addAll(tableImportManager.getImportedTables());
+                            }
                             importedNodeElements.addAll(tableImportManager.getImportedViews());
                             importedSequences = tableImportManager.getImportedSequences();
                             importedTriggers = tableImportManager.getImportedTriggers();

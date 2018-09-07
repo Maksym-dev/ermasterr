@@ -94,8 +94,4 @@ public class SqlTypeFactory {
         }
 
     }
-
-    public static void main(final String[] args) {
-        SqlType.main((String[]) null);
-    }
 }

@@ -22,7 +22,6 @@ import org.insightech.er.editor.model.dbimport.PreImportFromDBManager;
 import org.insightech.er.editor.model.diagram_contents.element.node.NodeElement;
 import org.insightech.er.editor.model.diagram_contents.element.node.category.Category;
 import org.insightech.er.editor.model.diagram_contents.element.node.table.ERTable;
-import org.insightech.er.editor.model.diagram_contents.element.node.table.TableView;
 import org.insightech.er.editor.model.settings.DBSetting;
 import org.insightech.er.editor.view.dialog.dbimport.AbstractSelectImportedObjectDialog;
 import org.insightech.er.editor.view.dialog.dbimport.ImportDBSettingDialog;
@@ -149,23 +148,22 @@ public class ImportFromDBAction extends AbstractImportAction {
                                 List<ERTable> existTables = 
                                         diagram.getDiagramContents().getContents().getTableSet().getList();
                                 List<ERTable> existTablesCopy = new ArrayList<>(existTables);
-                                for (ERTable table : importedTables) {
+                                for (ERTable imported : importedTables) {
+                                	boolean importedFoundInExists = false;
                                     for (ERTable exists : existTablesCopy) {
-                                        if (table.getPhysicalName().equalsIgnoreCase(exists.getPhysicalName())) {
-                                            table.setFontName(exists.getFontName());
-                                            table.setFontSize(exists.getFontSize());
-                                            table.setLocation(exists.getLocation());
-                                            table.setActualLocation(exists.getActualLocation());
-                                            diagram.removeContent(exists);
-                                            for (final Category category : diagram.getDiagramContents().getSettings().getCategorySetting().getAllCategories()) {
-                                                if (category.contains(exists)) {
-                                                    category.remove(exists);
-                                                }
-                                            }
-                                            diagram.refreshChildren();
-                                            importedNodeElements.add(table);
+                                        if (imported.getPhysicalName().equalsIgnoreCase(exists.getPhysicalName())) {
+                                            imported.setFontName(exists.getFontName());
+                                            imported.setFontSize(exists.getFontSize());
+                                            imported.setLocation(exists.getLocation());
+                                            imported.setActualLocation(exists.getActualLocation());
+                                            removeExistsTableFromDiagram(diagram, exists);
+                                            importedNodeElements.add(imported);
+                                            importedFoundInExists = true;
                                             break;
                                         }
+                                    }
+                                    if (!importedFoundInExists) {
+                                    	importedNodeElements.add(imported);
                                     }
                                 }
                             } else {
@@ -206,4 +204,15 @@ public class ImportFromDBAction extends AbstractImportAction {
         }
 
     }
+
+    //TODO make it revertable
+	private void removeExistsTableFromDiagram(final ERDiagram diagram, final ERTable exists) {
+		diagram.removeContent(exists);
+		for (final Category category : diagram.getDiagramContents().getSettings().getCategorySetting().getAllCategories()) {
+		    if (category.contains(exists)) {
+		        category.remove(exists);
+		    }
+		}
+		diagram.refreshChildren();
+	}
 }
